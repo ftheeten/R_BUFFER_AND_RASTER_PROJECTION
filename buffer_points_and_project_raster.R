@@ -107,12 +107,15 @@ df_intersection["area_ha"]<-rep(area_ha,nrow(df_intersection))
 df_final<-df_intersection %>%
   group_by(ID, item_type, label ) %>%
   summarise(count_cell = n(), area_h = sum(area_ha))
-df_final<-
+
 df_final<- merge(x=df_final,y=df_point_layer, 
                         by.x=c("ID"), 
                         by.y=c("ID_ROW"),
                         all.x=TRUE)
 
 write.csv(df_final,file.choose(), row.names = FALSE)
-#buff_check<-write_sf(buffered_layer, dsn = paste(point_layer_name,"_buf.gpkg"))
+
+
+
+
 

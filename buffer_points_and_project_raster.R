@@ -3,6 +3,7 @@ require(tibble)
 require(terra)
 require(XML)
 require(dplyr)
+require(xlsx)
 
 
 get_utm_zone<-function(x_center, y_center)
@@ -37,13 +38,33 @@ raster_style_name=choose.files( multi=FALSE, caption="Select input raster style"
 
 
 #attention GEOS >3.12 pour buffer métriques sur WGS84
-print("enter your radius un meters")
+print("enter your radius in meters")
 buffer_m<-scan (what=integer(), nmax=1, quiet=T)
 
 point_layer<-read_sf(dsn = point_layer_name)
 df_point_layer <- as.data.frame(point_layer)
+
+
+cols<-colnames(df_point_layer)
+i<-1
+to_remove <- c()
+
+for(col in cols)
+{
+  print(col)
+  print(i)
+  if(tolower(col)=="geom"|tolower(col)=="geometry")
+  {
+    to_remove <- c(to_remove,col)
+    
+  }
+  i<-i+1
+}
+df_point_layer<-df_point_layer %>% select(-one_of(to_remove)) 
+
+
 df_point_layer$ID_ROW<-seq_len(nrow(df_point_layer))
-df_point_layer<-df_point_layer[ , -which(names(df_point_layer) %in% c("geometry"))]
+#df_point_layer<-df_point_layer[ , -which(names(df_point_layer) %in% c("geometry"))]
 buffered_layer=st_buffer(point_layer, dist=buffer_m)
 
 raster_layer<-rast(raster_layer_name)
@@ -113,7 +134,13 @@ df_final<- merge(x=df_final,y=df_point_layer,
                         by.y=c("ID_ROW"),
                         all.x=TRUE)
 
-write.csv(df_final,file.choose(), row.names = FALSE)
+name_excel<-file.choose()
+
+
+
+write.xlsx(df_final,name_excel)
+
+
 
 
 
